@@ -20,7 +20,7 @@ def display_wb_info(wb):
 
 def main():
     print("be sure you started the litex_server for bridging, e.g.")
-    print("litex_server --uart --uart-port /dev/ttyUSB0  --uart-baudrate 115200")
+    print("litex_server --uart --uart-port /dev/ttyUSB0  --uart-baudrate 1000000")
     print("---")
 
     wb = litex.RemoteClient()
