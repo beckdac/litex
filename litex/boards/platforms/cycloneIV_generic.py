@@ -32,12 +32,12 @@ _io = [
         Subsignal("rx", Pins("58"), IOStandard("3.3-V LVTTL"))     # 58
     ),
 
-    #("spiflash", 0,
-    #    Subsignal("cs_n", Pins("R12"), IOStandard("LVCMOS33")),
-    #    Subsignal("clk", Pins("R11"), IOStandard("LVCMOS33")),
-    #    Subsignal("mosi", Pins("P12"), IOStandard("LVCMOS33")),
-    #    Subsignal("miso", Pins("P11"), IOStandard("LVCMOS33")), 
-    #),
+    ("spiflash", 0,
+        Subsignal("cs_n", Pins("8"), IOStandard("LVCMOS33")),
+        Subsignal("clk", Pins("12"), IOStandard("LVCMOS33")),
+        Subsignal("mosi", Pins("6"), IOStandard("LVCMOS33")),
+        Subsignal("miso", Pins("13"), IOStandard("LVCMOS33")), 
+    ),
 
     #("i2c", 0,
     #    Subsignal("sclk", Pins("133")),                             # 133
