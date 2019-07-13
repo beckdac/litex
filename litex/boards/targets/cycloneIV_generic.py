@@ -135,7 +135,8 @@ class BridgeSoC(BaseSoC):
         kwargs['cpu_type'] = None
         BaseSoC.__init__(self, platform, *args, with_uart=False, **kwargs)
         self.add_cpu_or_bridge(
-                UARTWishboneBridge(platform.request("serial", 0), self.clk_freq, baudrate=115200)
+                #UARTWishboneBridge(platform.request("serial", 0), self.clk_freq, baudrate=115200)
+                UARTWishboneBridge(platform.request("serial", 0), self.clk_freq, baudrate=500000)
             )
         self.add_wb_master(self.cpu_or_bridge.wishbone)
 
