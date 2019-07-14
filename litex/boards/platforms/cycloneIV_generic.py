@@ -32,30 +32,29 @@ _io = [
         Subsignal("rx", Pins("58"), IOStandard("3.3-V LVTTL"))     # 58
     ),
 
-    ("spiflash", 0,
-        Subsignal("cs_n", Pins("8"), IOStandard("LVCMOS33")),
-        Subsignal("clk", Pins("12"), IOStandard("LVCMOS33")),
-        Subsignal("mosi", Pins("6"), IOStandard("LVCMOS33")),
-        Subsignal("miso", Pins("13"), IOStandard("LVCMOS33")), 
+    #("spiflash", 0,
+    #    Subsignal("cs_n", Pins("8"), IOStandard("LVCMOS33")),
+    #    Subsignal("clk", Pins("12"), IOStandard("LVCMOS33")),
+    #    Subsignal("mosi", Pins("6"), IOStandard("LVCMOS33")),
+    #    Subsignal("miso", Pins("13"), IOStandard("LVCMOS33")), 
+    #),
+
+    ("i2c", 0,
+        Subsignal("scl", Pins("133")),                             # 133
+        Subsignal("sda", Pins("132")),                             # 132
+        IOStandard("3.3-V LVTTL")
     ),
 
-    #("i2c", 0,
-    #    Subsignal("sclk", Pins("133")),                             # 133
-    #    Subsignal("sdat", Pins("132")),                             # 132
-    #    IOStandard("3.3-V LVTTL")
-    #),
-
-    #("gpio_0", 0,
-    #    Pins("144 142 138 136",                                     # 144 142 138 136
-    #        "143 141 137 135"),                                     # 143 141 137 135
-    #    IOStandard("3.3-V LVTTL")
-    #),
-
-    #("gpio_1", 0,
-    #    Pins("128 126 124 120",                                 # 128 126 124 120
-    #        "129 127 125 121"),                                  # 129 127 125 121
-    #    IOStandard("3.3-V LVTTL")
-    #)
+    ("gpio", 0,
+        Pins("144 142 138 136",                                     # 144 142 138 136
+            "143 141 137 135"),                                     # 143 141 137 135
+        IOStandard("3.3-V LVTTL")
+    ),
+    ("gpio", 1,
+        Pins("128 126 124 120",                                 # 128 126 124 120
+            "129 127 125 121"),                                  # 129 127 125 121
+        IOStandard("3.3-V LVTTL")
+    )
 ]
 
 # Platform -----------------------------------------------------------------------------------------
@@ -64,14 +63,14 @@ class Platform(AlteraPlatform):
     default_clk_name = "clk50"
     default_clk_period = 20
 
-    gateware_size = 0x28000
+    #gateware_size = 0x28000
     
-    spiflash_model = "m25p16"
-    spiflash_read_dummy_bits = 8
-    spiflash_clock_div = 2
-    spiflash_total_size = int((16/8)*1024*1024) # 16Mbit
-    spiflash_page_size = 256
-    spiflash_sector_size = 0x10000
+    #spiflash_model = "m25p16"
+    #spiflash_read_dummy_bits = 8
+    #spiflash_clock_div = 2
+    #spiflash_total_size = int((16/8)*1024*1024) # 16Mbit
+    #spiflash_page_size = 256
+    #spiflash_sector_size = 0x10000
 
     def __init__(self):
         AlteraPlatform.__init__(self, "EP4CE6E22C8", _io)

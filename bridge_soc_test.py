@@ -16,6 +16,8 @@ def display_wb_info(wb):
             pass
         elif entry[0] == 'memory_region':
             print("mem %30s  %10s  %8d  %s" % (entry[1], entry[2], int(entry[3]), entry[4]))
+            #res = wb.read(int(entry[3]), int(32))
+            #print(" ".join("{:02x}".format(ord(c)) for c in str(res)))
 
 
 def main():
@@ -25,6 +27,10 @@ def main():
 
     wb = litex.RemoteClient()
     wb.open()
+    wb.write(0x82003824, 1)
+    wb.write(0x82003800, [0, 0, 255, 255 ])
+    wb.write(0x82003810, [0, 0, 0, 0 ])
+    wb.write(0x82003820, 1)
     display_wb_info(wb)
 
     i = 0

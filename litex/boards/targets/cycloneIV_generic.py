@@ -10,6 +10,10 @@ from migen import *
 
 from gateware import cas
 from gateware import spi_flash
+from litex.soc.cores import uart
+from litex.soc.cores import bitbang
+from litex.soc.cores import spi
+from litex.soc.cores import gpio
 
 from litex.boards.platforms import cycloneIV_generic
 
@@ -71,6 +75,9 @@ class BaseSoC(SoCCore):
     csr_peripherals = (
         #"spiflash",
         "cas",
+        "i2c",
+        "gpio",
+        "uart"
     )
     csr_map_update(SoCCore.csr_map, csr_peripherals)
     
@@ -100,6 +107,15 @@ class BaseSoC(SoCCore):
         SoCCore.__init__(self, platform, clk_freq, **kwargs)
         
         self.submodules.cas = cas.ControlAndStatus(platform, clk_freq)
+
+        self.submodules.uart = uart.UART(uart.RS232PHY(platform.request('serial', 1),
+            clk_freq, baudrate=115200))
+                
+        self.submodules.i2c = bitbang.I2CMaster(platform.request('i2c'))
+
+        self.submodules.gpio = gpio.GPIOInOut(platform.request('gpio', 0), platform.request('gpio', 1))
+
+        #self.submodules.spi = 
 
         # SPI flash peripheral
         #self.submodules.spiflash = spi_flash.SpiFlashSingle(
