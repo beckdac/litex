@@ -95,7 +95,7 @@ class BaseSoC(SoCCore):
         # no londer neaded?
         #platform = cycloneIV_generic.Platform()
 
-        # spiflash not implemented
+        # spiflash being tested
         #kwargs['cpu_reset_address']=self.mem_map["spiflash"]+platform.gateware_size
         SoCCore.__init__(self, platform, clk_freq, **kwargs)
         
@@ -119,9 +119,9 @@ class BaseSoC(SoCCore):
         # We don't have a DRAM, so use the remaining SPI flash for user
         # program.
         #self.add_memory_region("user_flash", self.flash_boot_address,
-            # Leave a grace area- possible one-by-off bug in add_memory_region?
-            # Possible fix: addr < origin + length - 1
-            #platform.spiflash_total_size - (self.flash_boot_address - self.mem_map["spiflash"]) - 0x100)
+        #    # Leave a grace area- possible one-by-off bug in add_memory_region?
+        #    # Possible fix: addr < origin + length - 1
+        #    platform.spiflash_total_size - (self.flash_boot_address - self.mem_map["spiflash"]) - 0x100)
 
         
 class BridgeSoC(BaseSoC):
@@ -146,7 +146,7 @@ class BridgeSoC(BaseSoC):
 # Build --------------------------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description="LiteX SoC on Waveshare Cyclone IV board")
+    parser = argparse.ArgumentParser(description="LiteX SoC on Generic Cyclone IV board")
     builder_args(parser)
     soc_core_args(parser)
     args = parser.parse_args()
