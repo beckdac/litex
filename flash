@@ -1,0 +1,4 @@
+#!/bin/bash
+
+quartus_cpf -c soc_bridgesoc_cycloneIV_generic/flash.cof
+quartus_pgm -c 1 soc_bridgesoc_cycloneIV_generic/chain.cdf 
