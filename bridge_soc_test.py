@@ -73,6 +73,7 @@ class TIMER:
         self.wb = wb
         self.num = num
         self.top = 0
+        self.width = 4
         self.top_bytes = [ 0, 0, 0, 0 ]
         self.en_addr = addr_lookup(wb, 'csr_register', f'timer{num}_en')
         self.load_addr = addr_lookup(wb, 'csr_register', f'timer{num}_load')
@@ -90,7 +91,7 @@ class TIMER:
     def enable(self, top):
         self.en = True
         self.top = top
-        self.top_bytes = list(top.to_bytes(4, 'big'))
+        self.top_bytes = list(top.to_bytes(self.width, 'big'))
         self.wb.write(self.load_addr, self.top_bytes)
         self.wb.write(self.reload_addr, self.top_bytes)
         self.wb.write(self.en_addr, 1)
@@ -104,7 +105,7 @@ class TIMER:
 
     def value(self):
         self._update_value()
-        return self.wb.read(self.value_addr, 1)
+        return self.wb.read(self.value_addr, self.width)
 
 
 class GPIO:
@@ -165,7 +166,7 @@ def main():
 
     print("configuring bus...")
     bus = BUS(wb)
-    bus.timer0.enable(65536)
+    bus.timer0.enable(65536*255)
 
     display_wb_info(bus)
     print("loop starting...")
