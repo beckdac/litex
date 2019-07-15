@@ -77,7 +77,8 @@ class BaseSoC(SoCCore):
         "cas",
         "i2c",
         "gpio",
-        "uart"
+        "uart",
+        "uart_phy"
     )
     csr_map_update(SoCCore.csr_map, csr_peripherals)
     
@@ -108,8 +109,9 @@ class BaseSoC(SoCCore):
         
         self.submodules.cas = cas.ControlAndStatus(platform, clk_freq)
 
-        self.submodules.uart = uart.UART(uart.RS232PHY(platform.request('serial', 1),
-            clk_freq, baudrate=115200))
+        self.submodules.uart_phy = uart.RS232PHY(platform.request('serial', 1),
+                                    clk_freq, baudrate=115200)
+        self.submodules.uart = ResetInserter()(uart.UART(self.uart_phy))
                 
         self.submodules.i2c = bitbang.I2CMaster(platform.request('i2c'))
 

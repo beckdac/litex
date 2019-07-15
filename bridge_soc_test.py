@@ -23,29 +23,43 @@ class UART:
         self.txfull_addr = addr_lookup(wb, 'csr_register', 'uart_txfull')
         self.rxempty_addr = addr_lookup(wb, 'csr_register', 'uart_rxempty')
         self.ev_status_addr = addr_lookup(wb, 'csr_register', 'uart_ev_status')
-        self.ev_pend_addr = addr_lookup(wb, 'csr_register', 'uart_ev_pending')
+        self.ev_pending_addr = addr_lookup(wb, 'csr_register', 'uart_ev_pending')
         self.ev_enable = addr_lookup(wb, 'csr_register', 'uart_ev_enable')
-       
-        wb.write(self.ev_pend_addr, UART_EV_TX | UART_EV_RX)
+        self.phy_tuning_word = addr_lookup(wb, 'csr_register', 'uart_phy_tuning_word')
+      
+        # flush and enable
+        wb.write(self.ev_pending_addr, UART_EV_TX | UART_EV_RX)
         wb.write(self.ev_enable, UART_EV_TX | UART_EV_RX)
 
+    def baud(self, new_baud=None):
+        if new_baud is not None:
+            bytes = new_baud.to_bytes(4, byteorder='big')
+            return self.wb.write(self.phy_tuning_word, bytes)
+        else:
+            value = self.wb.read(self.phy_tuning_word, 4)
+            return int.from_bytes(value, byteorder='big', signed=False)
+
     def _rx_empty(self):
-        return self.wb.read(self.rxempty_addr, 1)
+        return bool(self.wb.read(self.rxempty_addr, 1)[0])
 
     def _tx_full(self):
-        return self.wb.read(self.txfull_addr, 1)
+        return bool(self.wb.read(self.txfull_addr, 1)[0])
+
+    def _ev_pending(self, value):
+        ev_pending = self.wb.read(self.ev_pending_addr, 1)[0]
+        return self.wb.write(self.ev_pending_addr, ev_pending | value)
     
     def read(self, block=True):
         if block:
-            while _rx_empty(self):
+            while self._rx_empty():
                 pass
-            c = self.wb.read(self.rxtx_addr, 1)
-            _ev_pending(self, UART_EV_RX)
+            c = self.wb.read(self.rxtx_addr, 1)[0]
+            self._ev_pending(UART_EV_RX)
             return c
         else:
-            if not _rx_empty(self):
-                c = self.wb.read(self.rxtx_addr, 1)
-                _ev_pending(self, UART_EV_RX)
+            if not self._rx_empty():
+                c = self.wb.read(self.rxtx_addr, 1)[0]
+                self._ev_pending(UART_EV_RX)
                 return c
             else:
                 pass
@@ -56,12 +70,12 @@ class UART:
             while self._tx_full():
                 pass
             self.wb.write(self.rxtx_addr, c)
-            _ev_pending(self, UART_EV_TX)
+            self._ev_pending(UART_EV_TX)
             return 1
         else:
             if not self._tx_full():
                 self.wb.write(self.rxtx_addr, c)
-                _ev_pending(self, UART_EV_TX)
+                self._ev_pending(UART_EV_TX)
                 return 1
             else:
                 pass
@@ -157,9 +171,12 @@ def display_wb_info(bus):
     bus.timer0._update_value()
 
     # write a character to the uart bus
-    ret = bus.uart.write('A', block=False)
+    ret = bus.uart.write(ord('A'), block=False)
     if ret is None:
         print("UART tx buffer is full")
+    ret = bus.uart.read(block=False)
+    if ret is not None:
+        print(f"UART rx'ed this: {ret}")
 
     # iterate over bus elements and show info
     for entry in bus.wb.items:
