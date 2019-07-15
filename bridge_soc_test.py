@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
+
 import time
 
 import litex
@@ -6,8 +7,6 @@ import litex
 
 UART_EV_TX = (1 << 0)
 UART_EV_RX = (1 << 1)
-
-uart = None
 
 
 def addr_lookup(wb, addr_type, reg_name):
@@ -28,6 +27,7 @@ class UART:
         self.ev_enable = addr_lookup(wb, 'csr_register', 'uart_ev_enable')
        
         wb.write(self.ev_pend_addr, UART_EV_TX | UART_EV_RX)
+        wb.write(self.ev_enable, UART_EV_TX | UART_EV_RX)
 
     def _rx_empty(self):
         return self.wb.read(self.rxempty_addr, 1)
@@ -107,6 +107,10 @@ class TIMER:
         self._update_value()
         return self.wb.read(self.value_addr, self.width)
 
+    def value_int(self):
+        bs = self.value()
+        return int.from_bytes(bs, byteorder='big', signed=False)
+
 
 class GPIO:
     def __init__(self, wb, addr_type, reg_name, size=1):
@@ -129,6 +133,22 @@ class BUS:
         self.cas = GPIO(wb, 'csr_register', 'cas_leds_out')
         self.gpio_in = GPIO(wb, 'csr_register', 'gpio_in')
         self.gpio_out = GPIO(wb, 'csr_register', 'gpio_out')
+        self.reset_addr = addr_lookup(wb, 'csr_register', 'ctrl_reset')
+        self.scratch_aadr = addr_lookup(wb, 'csr_register', 'ctrl_scratch')
+        self.bus_errors = addr_lookup(wb, 'csr_register', 'ctrl_bus_errors')
+
+    def reset(self):
+        return self.wb.write(self.reset_addr, 1)
+
+    def scratch(self):
+        return self.wb.read(self.scratch_addr, 4)
+
+    def bus_errors(self):
+        return self.wb.read(self.bus_errors_addr, 4)
+
+    def bus_errors_int(self):
+        be = self.wb.read(self.bus_errors_addr, 4)
+        return int.from_bytes(be, byteorder='big', signed=False)
 
 
 def display_wb_info(bus):
@@ -166,6 +186,7 @@ def main():
 
     print("configuring bus...")
     bus = BUS(wb)
+    bus.reset()
     bus.timer0.enable(65536*255)
 
     display_wb_info(bus)
@@ -178,7 +199,6 @@ def main():
     while (1):
         bits = (1 << i) ^ 0xFF
         bus.cas.write(bits)
-        #wb.write(0x82000000, bits)
         time.sleep(.150)
         if i == 7 or i == 0:
             dir *= -1
