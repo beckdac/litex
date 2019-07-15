@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import sys
 import time
 
 import litex
@@ -171,12 +172,12 @@ def display_wb_info(bus):
     bus.timer0._update_value()
 
     # write a character to the uart bus
-    ret = bus.uart.write(ord('A'), block=False)
-    if ret is None:
-        print("UART tx buffer is full")
-    ret = bus.uart.read(block=False)
-    if ret is not None:
-        print(f"UART rx'ed this: {ret}")
+    #ret = bus.uart.write(ord('A'), block=False)
+    #if ret is None:
+    #    print("UART tx buffer is full")
+    #ret = bus.uart.read(block=False)
+    #if ret is not None:
+    #    print(f"UART rx'ed this: {ret}")
 
     # iterate over bus elements and show info
     for entry in bus.wb.items:
@@ -204,7 +205,7 @@ def main():
     print("configuring bus...")
     bus = BUS(wb)
     bus.reset()
-    bus.timer0.enable(65536*255)
+    bus.timer0.enable(65536*200)
 
     display_wb_info(bus)
     print("loop starting...")
@@ -216,7 +217,14 @@ def main():
     while (1):
         bits = (1 << i) ^ 0xFF
         bus.cas.write(bits)
-        time.sleep(.150)
+        #time.sleep(.150)
+        now = bus.timer0.value_int()
+        while bus.timer0.value_int() < now:
+            ret = bus.uart.read(block=False)
+            if ret is not None:
+                print(chr(ret), end='')
+                sys.stdout.flush()
+                break
         if i == 7 or i == 0:
             dir *= -1
         i = i + dir
