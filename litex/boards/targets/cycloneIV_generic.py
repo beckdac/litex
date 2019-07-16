@@ -92,9 +92,11 @@ class BaseSoC(SoCCore):
         assert sys_clk_freq == int(50e6)
 
         if 'integrated_rom_size' not in kwargs:
-            kwargs['integrated_rom_size'] = 0
+            kwargs['integrated_rom_size'] = 2048
         if 'integrated_sram_size' not in kwargs:
             kwargs['integrated_sram_size'] = 0
+        if 'integrated_main_ram_size' not in kwargs:
+            kwargs['integrated_main_ram_size'] = 16384
 
         clk_freq = sys_clk_freq
 
@@ -148,6 +150,13 @@ class BridgeSoC(BaseSoC):
         "io",
     )
     csr_map_update(BaseSoC.csr_map, csr_peripherals)
+    mem_map = {
+        "rom":      0x00000000,  # (default shadow @0x80000000)
+        "main_ram": 0x00000800,  # (default shadow @0x80000800)
+        "csr":      0x02000000,  # (default shadow @0x82000000)
+        #"sram": 0x40000000,  # (default shadow @0xc0000000)
+    }
+    mem_map.update(BaseSoC.mem_map)
     
     def __init__(self, platform=cycloneIV_generic.Platform(), *args, **kwargs):
         kwargs['cpu_type'] = None
