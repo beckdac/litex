@@ -94,9 +94,9 @@ class BaseSoC(SoCCore):
         if 'integrated_rom_size' not in kwargs:
             kwargs['integrated_rom_size'] = 2048
         if 'integrated_sram_size' not in kwargs:
-            kwargs['integrated_sram_size'] = 0
+            kwargs['integrated_sram_size'] = 16384
         if 'integrated_main_ram_size' not in kwargs:
-            kwargs['integrated_main_ram_size'] = 16384
+            kwargs['integrated_main_ram_size'] = 0
 
         clk_freq = sys_clk_freq
 
@@ -150,19 +150,12 @@ class BridgeSoC(BaseSoC):
         "io",
     )
     csr_map_update(BaseSoC.csr_map, csr_peripherals)
-    mem_map = {
-        "rom":      0x00000000,  # (default shadow @0x80000000)
-        "main_ram": 0x00000800,  # (default shadow @0x80000800)
-        "csr":      0x02000000,  # (default shadow @0x82000000)
-        #"sram": 0x40000000,  # (default shadow @0xc0000000)
-    }
-    mem_map.update(BaseSoC.mem_map)
     
     def __init__(self, platform=cycloneIV_generic.Platform(), *args, **kwargs):
         kwargs['cpu_type'] = None
         BaseSoC.__init__(self, platform, *args, with_uart=False, **kwargs)
+
         self.add_cpu_or_bridge(
-                #UARTWishboneBridge(platform.request("serial", 0), self.clk_freq, baudrate=115200)
                 UARTWishboneBridge(platform.request("serial", 0), self.clk_freq, baudrate=1000000)
             )
         self.add_wb_master(self.cpu_or_bridge.wishbone)
@@ -176,10 +169,19 @@ def main():
     parser = argparse.ArgumentParser(description="LiteX SoC on Generic Cyclone IV board")
     builder_args(parser)
     soc_core_args(parser)
+    parser.add_argument("--rom-init", default=None, help="rom_init file")
     args = parser.parse_args()
 
-    soc = BridgeSoC(**soc_core_argdict(args))
-    builder = Builder(soc, **builder_argdict(args))
+    cpu_endianness = "big"
+
+    soc_kwargs = soc_core_argdict(args)
+    if args.rom_init:
+        soc_kwargs["integrated_rom_init"] = get_mem_data(args.rom_init, cpu_endianness)
+    soc = BridgeSoC(**soc_kwargs)
+
+    builder_kwargs = builder_argdict(args)
+    builder_kwargs["csr_csv"] = "csr.csv"
+    builder = Builder(soc, **builder_kwargs)
     builder.build()
 
 
